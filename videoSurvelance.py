@@ -1,6 +1,7 @@
 import face_recognition
 import cv2
 import numpy as np
+import datetime
 # import mic shit
 
 def imageCheck():
@@ -9,46 +10,68 @@ def imageCheck():
     video_capture = cv2.VideoCapture(0)
 
     # Create arrays of known face encodings and their names
-    known_face_names = [
+    known_face_ids = [
         # pull from database
     ]
     known_face_encodings = [
         #pull from database
     ]
-    known_faces = list(zip(known_face_encodings,known_face_names))
+    known_faces = list(zip(known_face_encodings,known_face_ids))
     
     # Initialize some variables
     face_locations = []
     face_encodings = []
-    face_names = []
     process_this_frame = True
 
-    checkImage(video_capture.read())
+    if checkImage(video_capture.read()).any() == "Unknown":
+        # TODO:
+        # Start microphone recording 
+        startTime = datetime.datetime.now()
+        while True:
+            face_names = []
+            # Grab a single frame of video
+            ret, frame = video_capture.read()
 
-    while True:
-        # Grab a single frame of video
-        ret, frame = video_capture.read()
+            # Only process every other frame of video to save time
+            if process_this_frame:
+                rgb_small_frame = convertImage(frame)
+                face_names.append(checkImage(rgb_small_frame,known_faces))
+                
 
-        # Only process every other frame of video to save time
-        if process_this_frame:
-            rgb_small_frame = convertImage(frame)
-            face_names.append(checkImage(rgb_small_frame,known_faces))
-            
+            process_this_frame = not process_this_frame
+            talkingCounter = 0
+            currentTalker = None
+            timestamps = []
+            while talkingCounter < 6000000:
+                personTalking = detectTalker()
+                if personTalking == None:
+                    talkingCounter += 1
+                else:
+                    talkingCounter = 0
+                if personTalking != currentTalker:
+                    currentTalker  = personTalking
+                    timestamps += (startTime - datetime.datetime.now(),currentTalker)
 
-        process_this_frame = not process_this_frame
+            #TODO:
+            # close mic
+            # take audio file
+            # cut it at time stamps 
+            # stich together for all id's
+            # return                
 
+            # Display the results
+            displayResultsOnWebCam()
 
-        # Display the results
-        displayResultsOnWebCam()
+            # Hit 'q' on the keyboard to quit!
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
-        # Hit 'q' on the keyboard to quit!
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    # Release handle to the webcam
-    video_capture.release()
-    cv2.destroyAllWindows()
-    return list(zip(face_names,))
+        # Release handle to the webcam
+        video_capture.release()
+        cv2.destroyAllWindows()
+        return list(zip(face_names,))
+    else:
+        return
 
 def displayResultsOnWebCam(face_locations, face_names,frame):
     for (top, right, bottom, left), name in zip(face_locations, face_names):
