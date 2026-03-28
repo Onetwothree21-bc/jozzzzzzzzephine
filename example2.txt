@@ -24,7 +24,7 @@
 1: Exactly. Do you usually study here?
 0: I think I might start. It’s actually a nice spot, even if it’s busy.
 1: Same. I was exploring campus and just ended up here.
-0: Well, if you ever need a study buddy—or just someone to complain about stats with…
+0: Well, if you ever need a study buddy - or just someone to complain about stats with…
 1: I might take you up on that.
 0: Cool. First successful university connection?
 1: I’d say so
