@@ -30,18 +30,13 @@ def initilize(video_capture,known_faces):
     
 
 
-def imageCheck():
+def imageCheck(known_face_ids, known_face_encodings):
 
     # Get a reference to webcam #0 (the default one)
     video_capture = cv2.VideoCapture(0)
 
     # Create arrays of known face encodings and their names
-    known_face_ids = [
-        # pull from database
-    ]
-    known_face_encodings = [
-        #pull from database
-    ]
+    
     known_faces = (known_face_encodings,known_face_ids)
     
     # Initialize some variables
@@ -51,7 +46,7 @@ def imageCheck():
     
     checkPeople = initilize(video_capture, known_faces)
     peoples = [x for (x,y,z) in checkPeople]
-    new_face_encodings = [z for (x,y,z) in checkPeople]
+    new_face_encodings = [z for (x,y,z) in checkPeople if x == "Unknown"]
 
     if "Unknown" in peoples:
         # TODO:
@@ -129,7 +124,7 @@ def imageCheck():
         video_capture.release()
         cv2.destroyAllWindows()
         # return                
-        return (audio, timestamps),len(new_face_encodings)
+        return (audio, timestamps),len(peoples),peoples
 
             # Display the results
         displayResultsOnWebCam(face_locations, face_names,frame)
@@ -141,8 +136,9 @@ def imageCheck():
         
         return list(zip(face_ids,))
     else:
-        # get all needed data for each id    (checkPeople) is the list of id's    
-        return
+        # get all needed data for each id    (checkPeople) is the list of id's 
+        old_face_encodings = [z for (x,y,z) in checkPeople if x != "Unknown"]   
+        return None,len(old_face_encodings),old_face_encodings
 
 def displayResultsOnWebCam(face_locations, face_names,frame):
     for (top, right, bottom, left), name in zip(face_locations, face_names):
@@ -182,7 +178,7 @@ def checkImage(frame,known_faces, new = 'n'):
             face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
             best_match_index = np.argmin(face_distances)
             if matches[best_match_index] and face_distances[best_match_index] < 0.4:
-                name = known_face_names[best_match_index]
+                name = str(known_face_names[best_match_index])
    
         potential_face_names.append((name,tempid,face_encoding))
     return potential_face_names

@@ -78,10 +78,10 @@ def get_face_dataset(conn):
     rows = get_all_people(conn)
 
     encodings = []
-    names = []
+    ids = []
 
     for row in rows:
         encodings.append(json.loads(row["face_embedding"]))
-        names.append((row["first_name"], row["last_name"]))
+        ids.append(row["id"])  # store the person's database ID
     
-    return encodings, names
+    return encodings, ids
