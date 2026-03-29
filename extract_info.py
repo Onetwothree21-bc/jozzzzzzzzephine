@@ -21,20 +21,14 @@ def preprocess(text):
             line = line.split(':')[1]
             sentence = nltk.word_tokenize(line)
             sentence = nltk.pos_tag(sentence)
-            sentence2 = []
             for word, tag in sentence:
                 sentences.append((word, tag, id))
-            #sentences.append(sentence2)
-        #sentences = [nltk.word_tokenize(text)]
-        #sentences = [nltk.pos_tag(sentence) for sentence in sentences]
         return sentences
 
 
 def main():
     text = open('examples.txt', 'r').read()
-    #tokenizer = RegexpTokenizer(r'\w+')
     text = re.sub(r'[^\x00-\x7F]+', '', text)
-    #text = re.sub(r'[^\w\s]', '', text)
     grammar = r"""
     COURSE: {<STUDY>.*<COURSE>+}
     NAME: {<NAME><NNP>}
