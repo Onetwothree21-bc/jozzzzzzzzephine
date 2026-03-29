@@ -17,12 +17,10 @@ text = open('example2.txt', 'r').read()
 text = re.sub(r'[^\x00-\x7F]+', '', text)
 #text = re.sub(r'[^\w\s]', '', text)
 grammar = r"""
-#COURSE: {<STUDY>.*<NNP>+}
-#COURSE: {<STUDY>.*<NN>+}
 COURSE: {<STUDY>.*<COURSE>+}
 NAME: {<NAME><NNP>}
 NAME: {<NAME><.*><NNP>}
-NAME: {<NAME><NN>}"""
+NAME: {<NAME><.*><NN>}"""
 
 courses_list = [
     "architecture", "biomed", "biology", "bio", "business", "management", "chem", "chemistry", "civil", "computer science", "computer", "science", "cs", "electrical", "ee", "engineering", "eng", "english", "history", "maths", "mathematics", "medicine", "physics", "psychology", "social", "sociology", "statistics", "MSDS", "economics", "econometrics", "finance", "accounting", "marketing", "econ", "mech", "languages", "physics", "politics", "sports", "sport"
