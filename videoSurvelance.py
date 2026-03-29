@@ -1,5 +1,7 @@
 import face_recognition
 import cv2
+import sounddevice as sd
+from scipy.io.wavfile import write
 import numpy as np
 import datetime
 # import mic shit
@@ -49,8 +51,18 @@ def imageCheck(known_face_ids, known_face_encodings):
     new_face_encodings = [z for (x,y,z) in checkPeople if x == "Unknown"]
 
     if "Unknown" in peoples:
-        # TODO:
-        # Start microphone recording 
+        # Start microphone recording
+        fs = 44100  # sample rate
+        recording = True
+        audio_buffer = []
+
+        def audio_callback(indata, frames, time, status):
+            if recording:
+                audio_buffer.append(indata.copy())
+
+        stream = sd.InputStream(samplerate=fs, channels=1, callback=audio_callback)
+        stream.start()
+
         startTime = datetime.datetime.now()
         idnum = len([x for (x,y,z) in checkPeople if x == "Unknown"])
         talkingCounter = 0
@@ -103,11 +115,23 @@ def imageCheck(known_face_ids, known_face_encodings):
         timestamps[-1] = (timestamps[-1][0],-1)
                     
 
-        #TODO:
-        # close mic
+        # Stop microphone recording
+        recording = False
+        stream.stop()
+        stream.close()
 
-        # take audio file
-        audio = AudioSegment.from_mp3("audioFiles/testAudioFile.mp3")
+        # Combine audio chunks
+        if len(audio_buffer) == 0:
+            audio_data = np.array([])
+        else:
+            audio_data = np.concatenate(audio_buffer, axis=0).flatten()
+
+        ## Save to file
+        #audio_filename = "audioFiles/testAudioFile.wav"
+        #write(audio_filename, fs, audio_data)
+#
+        ## take audio file
+        #audio = AudioSegment.from_mp3("audioFiles/testAudioFile.mp3")
         # cut it at time stamps
         #previousTime = 0 
         #audioSlices = []
@@ -124,7 +148,7 @@ def imageCheck(known_face_ids, known_face_encodings):
         video_capture.release()
         cv2.destroyAllWindows()
         # return                
-        return (audio, timestamps),len(peoples),peoples
+        return (audio_data, timestamps),len(peoples),peoples
 
             # Display the results
         displayResultsOnWebCam(face_locations, face_names,frame)

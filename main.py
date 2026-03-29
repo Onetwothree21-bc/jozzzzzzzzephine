@@ -4,22 +4,20 @@ import numpy as np
 import speech_to_text as st
 import extract_info as ei
 import datetime
+import pyttsx3 
 
 def runSystem():
 
-    #  Run Facial Recognition
-
-    conn, cursor = db.init_db(reset = True)
-    
+    conn, cursor = db.init_db(reset=True)
     encodings, ids = db.get_face_dataset(conn)
 
-    audioShit, newNum, embeddings = vs.ImageCheck(ids, encodings)
+    audioShit, newNum, embeddings = vs.imageCheck(ids, encodings)
     
     if audioShit != None:
-        audioText = st.main(audioShit[0],audioShit[1])
+        audioText = st.main(audioShit[0], audioShit[1])
         dataInfo = ei.main(audioText)
         
-        for i in range(0,newNum):
+        for i in range(0, newNum):
             embedding = embeddings[i]
             first_name = dataInfo[i][1]
             job = dataInfo[i][2]
@@ -27,28 +25,53 @@ def runSystem():
             location = ""
             event = ""
             dateCurrent = datetime.datetime.now()
-            db.insert_person(conn,cursor,embedding,first_name,last_name,job,location,event,dateCurrent)
+
+            db.insert_person(
+                conn, cursor,
+                embedding, first_name, last_name,
+                job, location, event, dateCurrent
+            )
     
     else:
         # Get info from database
         people = []
-        for i in range(0,newNum):
+        for i in range(0, newNum):
             people.append(get_person_by_id(conn, embeddings[i]))
         
-        # Print into Colsole logs
+        # Print into Console logs
         for person in people:
             print_person_row(person)
         
-        # TODO
-        # Send to Bluetooth
+        # Build message
+        message = ""
 
+        for person in people:
+            if person is not None:
+                message += f"{person['first_name']} {person['last_name']} - {person['course_or_job']}. "
+
+        if message == "":
+            message = "No known people detected"
+
+        # send message
+        send_audio_message(message)
 
     return "data given"
 
-    # Add to DataBase here
-    print("add funcitonality to add to databases")
 
-    return "New Person"
+def send_audio_message(message):
+    print("Speaking:", message)
+
+    engine = pyttsx3.init()
+
+    # presets
+    engine.setProperty('rate', 170)   # speed
+    engine.setProperty('volume', 1.0) # max volume
+
+    try:
+        engine.say(message)
+        engine.runAndWait()
+    except Exception as e:
+        print("Audio error:", e)
 
 def get_person_by_id(conn, person_id):
     cursor = conn.cursor()
@@ -70,3 +93,4 @@ def print_person_row(row):
     print("Event: " + str(row['event']))
     print("Date: "+ str(row['date']))
     print("=========================")
+
