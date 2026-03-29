@@ -79,7 +79,10 @@ for subtree in result.subtrees():
 courses = {}
 for subtree in result.subtrees():
     if subtree.label() == 'COURSE':
-        courses[subtree.leaves()[1][2]] = subtree.leaves()[1][0]  # Store the ID as the value
+        course = ""
+        for i in range(1, len(subtree.leaves())):
+            course += subtree.leaves()[i][0] + " "
+        courses[subtree.leaves()[1][2]] = course.strip()  # Store the ID as the value
 #for sentence in preprocessed_text:
  #   result1 = cp.parse(sentence)
   #  result.append(result1)

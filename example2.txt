@@ -7,8 +7,8 @@
 0: I’m Alex, by the way.
 1: I’m Maya. Nice to meet you!
 0: So, what are you studying?
-1: Psychology. Lots of reading already… and it’s only week one. You?
-0: Computer science. Which means a lot of coding and pretending I understand what’s going on.
+1: I am doing Psychology. Lots of reading already… and it’s only week one. You?
+0: I study Computer Science. Which means a lot of coding and pretending I understand what’s going on.
 1: *laughs* Sounds intense. Do you enjoy it?
 0: Yeah, actually. It’s frustrating sometimes, but kind of satisfying when things finally work. What got you into psychology?
 1: I’ve always been curious about how people think and behave. Plus, I want to go into counseling eventually.
