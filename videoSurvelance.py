@@ -9,24 +9,32 @@ from pydub import AudioSegment
 from PIL import Image
 import math
 import os 
-os.makedirs("temporaryPictures", exist_ok=True)
+#os.makedirs("temporaryPictures", exist_ok=True)
+base_path = os.path.expanduser("~/TestImage")
+os.makedirs(base_path, exist_ok=True)
 
-def initilize(video_capture,known_faces):
-    ret, frame = video_capture.read()
+db_path = os.path.join(base_path, "Test.jpg")
+
+def initilize(frame,known_faces):
+    #if video_capture is None or not video_capture.isOpened():
+    #    print("Video capture is not available or failed to open.")
+    #    return (None, None, None)
     rgb_small_frame = convertImage(frame)
-    newImageProcess = checkImage(rgb_small_frame,known_faces,'y')
+    newImageProcess = checkImage(frame,rgb_small_frame,known_faces,'y')
 
     tempid = 0
     face_locations = face_recognition.face_locations(frame)
+    print("face Locations "+ str(len(face_locations)))
     for face_location in face_locations:
         tempid += 1
         # Print the location of each face in this image
         top, right, bottom, left = face_location
+        print(str(top)+" "+str(bottom)+" "+str(right)+" "+str(left))
 
         # You can access the actual face itself like this:
         face_image = frame[top:bottom, left:right]
         pil_image = Image.fromarray(face_image)
-        pil_image.save("temporaryPictures/"+str(tempid)+".jpg")
+        #pil_image.save("temporaryPictures/"+str(tempid)+".jpg")
     
     return newImageProcess
     
@@ -35,10 +43,10 @@ def initilize(video_capture,known_faces):
 def imageCheck(known_face_ids, known_face_encodings):
 
     # Get a reference to webcam #0 (the default one)
-    video_capture = cv2.VideoCapture(0)
-
-    # Create arrays of known face encodings and their names
     
+    video_capture = cv2.VideoCapture('/dev/video0',cv2.CAP_V4L2)
+    ret,frame = video_capture.read()
+    # Create arrays of known face encodings and their names
     known_faces = (known_face_encodings,known_face_ids)
     
     # Initialize some variables
@@ -46,7 +54,10 @@ def imageCheck(known_face_ids, known_face_encodings):
     current_face_encodings = []
     process_this_frame = True
     
-    checkPeople = initilize(video_capture, known_faces)
+    checkPeople = initilize(frame, known_faces)
+    print(checkPeople)
+    if checkPeople == (None,None,None):
+        return (None,None,None),None,None
     peoples = [x for (x,y,z) in checkPeople]
     new_face_encodings = [z for (x,y,z) in checkPeople if x == "Unknown"]
 
@@ -60,7 +71,7 @@ def imageCheck(known_face_ids, known_face_encodings):
             if recording:
                 audio_buffer.append(indata.copy())
 
-        stream = sd.InputStream(samplerate=fs, channels=1, callback=audio_callback)
+        stream = sd.InputStream(device='HD 1080P PC-Camera USB Audio (hw:1,0)', samplerate=fs, channels=1, callback=audio_callback)
         stream.start()
 
         startTime = datetime.datetime.now()
@@ -71,13 +82,13 @@ def imageCheck(known_face_ids, known_face_encodings):
         timestamps.append((0,0))
         while talkingCounter < 2400:
             # Grab a single frame of video
-            ret, frame = video_capture.read()
-
+            #ret, frame = video_capture.read()
+            
             # Only process every other frame of video to save time
             if process_this_frame:
                 rgb_small_frame = convertImage(frame)
                 
-                newImageProcess = checkImage(rgb_small_frame,known_faces)
+                newImageProcess = checkImage(frame,rgb_small_frame,known_faces)
                 if len([x for x in newImageProcess if x[0] == "Unknown"]) != idnum:
                     pass
                     #TODO:
@@ -112,6 +123,7 @@ def imageCheck(known_face_ids, known_face_encodings):
                     talkingCounter = 0
             
             process_this_frame = not process_this_frame
+            break
         timestamps[-1] = (timestamps[-1][0],-1)
                     
 
@@ -145,9 +157,12 @@ def imageCheck(known_face_ids, known_face_encodings):
         #    final_slices.append(sum([x for (x,y) in audioSlices if y == id]))
         
         # Release handle to the webcam
-        video_capture.release()
+        #video_capture.release()
         cv2.destroyAllWindows()
         # return                
+        print(audio_data)
+        print(timestamps)
+        print(peoples)
         return (audio_data, timestamps),len(peoples),peoples
 
             # Display the results
@@ -182,7 +197,7 @@ def displayResultsOnWebCam(face_locations, face_names,frame):
     # Display the resulting image
     cv2.imshow('Video', frame)
 
-def checkImage(frame,known_faces, new = 'n'):
+def checkImage(frame, smallframe, known_faces, new = 'n'):
     known_face_encodings = known_faces[0]
     known_face_names = known_faces[1]
     potential_face_names = []
@@ -193,6 +208,8 @@ def checkImage(frame,known_faces, new = 'n'):
     
     tempid = 0
     mouths = []
+    print("faceLocs "+ str(len(face_locations)))
+    print("faceEns "+ str(len(face_encodings)))
     for face_encoding in face_encodings:
         tempid += 1
         # See if the face is a match for the known face(s)
@@ -247,7 +264,7 @@ def detectTalker(frame):
     max_value = max(mouths)
 
     # Check if max mouth is noticeably more open than others
-    if all(max_value - m > 1 for m in mouths if m != max_value):
+    if all(max_value - m > 1 and max_value > 2 for m in mouths if m != max_value):
         return mouths.index(max_value) + 1
 
     return 0  # no clear talker

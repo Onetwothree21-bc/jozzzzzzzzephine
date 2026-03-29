@@ -10,17 +10,19 @@ import json
 import numpy as np
 import pandas as pd
 import os
+base_path = os.path.expanduser("~/face_voice_data")
+os.makedirs(base_path, exist_ok=True)
 
-DB_NAME = "face_voice.db"
+db_path = os.path.join(base_path, "face_voice.db")
 
 def init_db(reset=False):
 #reset database
-    if os.path.exists("face_voice.db"):
-        os.remove("face_voice.db")
+#   if os.path.exists("face_voice.db"):
+#       os.remove("face_voice.db")
 #create a database
 #creates a file called face_voice.db
 #connet: if file exists it opens it, if not it creates it
-    conn = sqlite3.connect("face_voice.db")
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row # allows names instead of indexes
 #cursor lets run sql commands
     cursor = conn.cursor()

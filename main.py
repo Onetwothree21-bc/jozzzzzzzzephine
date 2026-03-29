@@ -12,6 +12,12 @@ def runSystem():
     encodings, ids = db.get_face_dataset(conn)
 
     audioShit, newNum, embeddings = vs.imageCheck(ids, encodings)
+    print(audioShit)
+    print(str(newNum))
+    if audioShit == (None,None,None):
+        print ("Camera feed not showing")
+        return
+    return
     
     if audioShit != None:
         audioText = st.main(audioShit[0], audioShit[1])
@@ -94,3 +100,7 @@ def print_person_row(row):
     print("Date: "+ str(row['date']))
     print("=========================")
 
+def main():
+    runSystem()
+
+main()

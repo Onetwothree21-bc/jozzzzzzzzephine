@@ -12,97 +12,98 @@ nltk.download('maxent_ne_chunker_tab')
 nltk.download('averaged_perceptron_tagger_eng')
 import speech_recognition as sr
 
-text = open('example2.txt', 'r').read()
-#tokenizer = RegexpTokenizer(r'\w+')
-text = re.sub(r'[^\x00-\x7F]+', '', text)
-#text = re.sub(r'[^\w\s]', '', text)
-grammar = r"""
-#COURSE: {<STUDY>.*<NNP>+}
-#COURSE: {<STUDY>.*<NN>+}
-COURSE: {<STUDY>.*<COURSE>+}
-NAME: {<NAME><NNP>}
-NAME: {<NAME><.*><NNP>}
-NAME: {<NAME><NN>}"""
+def main():
+    text = open('/media/sf_jozzzzzzzzephine/example2.txt', 'r').read()
+    #tokenizer = RegexpTokenizer(r'\w+')
+    text = re.sub(r'[^\x00-\x7F]+', '', text)
+    #text = re.sub(r'[^\w\s]', '', text)
+    grammar = r"""
+    #COURSE: {<STUDY>.*<NNP>+}
+    #COURSE: {<STUDY>.*<NN>+}
+    COURSE: {<STUDY>.*<COURSE>+}
+    NAME: {<NAME><NNP>}
+    NAME: {<NAME><.*><NNP>}
+    NAME: {<NAME><NN>}"""
 
-courses_list = [
-    "architecture", "biomed", "biology", "bio", "business", "management", "chem", "chemistry", "civil", "computer science", "computer", "science", "cs", "electrical", "ee", "engineering", "eng", "english", "history", "maths", "mathematics", "medicine", "physics", "psychology", "social", "sociology", "statistics", "MSDS", "economics", "econometrics", "finance", "accounting", "marketing", "econ", "mech", "languages", "physics", "politics", "sports", "sport"
-]
-
-
-
+    courses_list = [
+        "architecture", "biomed", "biology", "bio", "business", "management", "chem", "chemistry", "civil", "computer science", "computer", "science", "cs", "electrical", "ee", "engineering", "eng", "english", "history", "maths", "mathematics", "medicine", "physics", "psychology", "social", "sociology", "statistics", "MSDS", "economics", "econometrics", "finance", "accounting", "marketing", "econ", "mech", "languages", "physics", "politics", "sports", "sport"
+    ]
 
 
 
-def preprocess(text):
-    #sentences = nltk.sent_tokenize(text)
-    #sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
-    sentences = []
-    for line in text.splitlines():
-        id = line.split(':')[0]
-        line = line.split(':')[1]
-        sentence = nltk.word_tokenize(line)
-        sentence = nltk.pos_tag(sentence)
-        sentence2 = []
-        for word, tag in sentence:
-            sentences.append((word, tag, id))
-        #sentences.append(sentence2)
-    #sentences = [nltk.word_tokenize(text)]
-    #sentences = [nltk.pos_tag(sentence) for sentence in sentences]
-    return sentences
 
 
 
-preprocessed_text = preprocess(text)
-#preprocessed_text = [
-#    (word, "STUDY") if (word.lower() == "study") | (word.lower == "studies") | (word.lower == "studying") | (word.lower == "course") else (word, tag)
-#    for (word, tag, id) in preprocessed_text[0]
-#]
-text1 = []
-for (word, tag, id) in preprocessed_text:
-    if ((word == "study") | (word == "studies") | (word == "studying") | (word == "course") | (word == "doing") | (word == "do")):
-        text1.append((word, "STUDY", id))
-    elif ((word == "name") | (word == "Im")):
-        text1.append((word, "NAME", id))
-    elif (word.lower() in courses_list):
-        text1.append((word, "COURSE", id))
-    elif (word not in string.punctuation):
-        text1.append((word, tag, id))
-
-result = []
-cp = nltk.RegexpParser(grammar)
-
-result = cp.parse(text1)
-
-names = {}
-for subtree in result.subtrees():
-    if subtree.label() == 'NAME':
-        names[subtree.leaves()[-1][2]] = subtree.leaves()[-1][0]  # Store the ID as the value
-names = {key: names[key] for key in sorted(names)}  # Remove any names that are also course names
-
-courses = {}
-for subtree in result.subtrees():
-    if subtree.label() == 'COURSE':
-        course = ""
-        for i in range(1, len(subtree.leaves())):
-            course += subtree.leaves()[i][0] + " "
-        courses[subtree.leaves()[1][2]] = course.strip()  # Store the ID as the value
+    def preprocess(text):
+        #sentences = nltk.sent_tokenize(text)
+        #sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
+        sentences = []
+        for line in text.splitlines():
+            id = line.split(':')[0]
+            line = line.split(':')[1]
+            sentence = nltk.word_tokenize(line)
+            sentence = nltk.pos_tag(sentence)
+            sentence2 = []
+            for word, tag in sentence:
+                sentences.append((word, tag, id))
+            #sentences.append(sentence2)
+        #sentences = [nltk.word_tokenize(text)]
+        #sentences = [nltk.pos_tag(sentence) for sentence in sentences]
+        return sentences
 
 
-output = []
-for key in names.keys():
-    output.append({
-        "id": key,
-        "name": names[key],
-        "course": courses.get(key, "")
-    })
-#for sentence in preprocessed_text:
- #   result1 = cp.parse(sentence)
-  #  result.append(result1)
-#result = cp.parse(preprocessed_text[0])
-ne = []
-for tree in preprocessed_text:
-    #ne2 = StanfordNERTagger('english.all.3class.distsim.crf.ser.gz', 'stanford-ner.jar')
-    ne1 = nltk.chunk.ne_chunk(tree)
-    ne.append(ne1)
 
-a = 4
+    preprocessed_text = preprocess(text)
+    #preprocessed_text = [
+    #    (word, "STUDY") if (word.lower() == "study") | (word.lower == "studies") | (word.lower == "studying") | (word.lower == "course") else (word, tag)
+    #    for (word, tag, id) in preprocessed_text[0]
+    #]
+    text1 = []
+    for (word, tag, id) in preprocessed_text:
+        if ((word == "study") | (word == "studies") | (word == "studying") | (word == "course") | (word == "doing") | (word == "do")):
+            text1.append((word, "STUDY", id))
+        elif ((word == "name") | (word == "Im")):
+            text1.append((word, "NAME", id))
+        elif (word.lower() in courses_list):
+            text1.append((word, "COURSE", id))
+        elif (word not in string.punctuation):
+            text1.append((word, tag, id))
+
+    result = []
+    cp = nltk.RegexpParser(grammar)
+
+    result = cp.parse(text1)
+
+    names = {}
+    for subtree in result.subtrees():
+        if subtree.label() == 'NAME':
+            names[subtree.leaves()[-1][2]] = subtree.leaves()[-1][0]  # Store the ID as the value
+    names = {key: names[key] for key in sorted(names)}  # Remove any names that are also course names
+
+    courses = {}
+    for subtree in result.subtrees():
+        if subtree.label() == 'COURSE':
+            course = ""
+            for i in range(1, len(subtree.leaves())):
+                course += subtree.leaves()[i][0] + " "
+            courses[subtree.leaves()[1][2]] = course.strip()  # Store the ID as the value
+
+
+    output = []
+    for key in names.keys():
+        output.append({
+            "id": key,
+            "name": names[key],
+            "course": courses.get(key, "")
+        })
+    #for sentence in preprocessed_text:
+    #   result1 = cp.parse(sentence)
+    #  result.append(result1)
+    #result = cp.parse(preprocessed_text[0])
+    ne = []
+    for tree in preprocessed_text:
+        #ne2 = StanfordNERTagger('english.all.3class.distsim.crf.ser.gz', 'stanford-ner.jar')
+        ne1 = nltk.chunk.ne_chunk(tree)
+        ne.append(ne1)
+
+    a = 4
