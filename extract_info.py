@@ -1,15 +1,10 @@
 import string
 import nltk
 import re
-import numpy
-from nltk.tag import StanfordNERTagger
-from nltk.parse import CoreNLPParser
-from nltk.tokenize import RegexpTokenizer
 nltk.download('punkt_tab')
 nltk.download('words')
 nltk.download('maxent_ne_chunker_tab')
 nltk.download('averaged_perceptron_tagger_eng')
-import speech_recognition as sr
 
 
 def preprocess(text):
@@ -26,8 +21,8 @@ def preprocess(text):
         return sentences
 
 
-def main():
-    text = open('example2.txt', 'r').read()
+def main(text):
+    #text = open('example2.txt', 'r').read()
     text = re.sub(r'[^\x00-\x7F]+', '', text)
     grammar = r"""
     COURSE: {<STUDY>.*<COURSE>+}
@@ -80,5 +75,3 @@ def main():
     return output
 
     a = 4
-
-main()
