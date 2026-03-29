@@ -7,10 +7,17 @@ from os import path
 
 r = sr.Recognizer()
 
-with sr.Microphone() as source:
-    audio = r.listen(source)
+def main(audio, timestamps):
+    text = ""
+    for i in range(len(timestamps) - 1):
+        audio_chunk = audio[timestamps[i][0]:timestamps[i+1[0]]]
+        text1 = r.recognize_amazon(audio_chunk)
+        text1 = timestamps[i][1] + ": " + text1
+        text += text1 + "\n"
+    return text
 
-text = r.recognize_amazon(audio)
+
+
 
 
 a = 4

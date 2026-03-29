@@ -83,6 +83,15 @@ for subtree in result.subtrees():
         for i in range(1, len(subtree.leaves())):
             course += subtree.leaves()[i][0] + " "
         courses[subtree.leaves()[1][2]] = course.strip()  # Store the ID as the value
+
+
+output = []
+for key in names.keys():
+    output.append({
+        "id": key,
+        "name": names[key],
+        "course": courses.get(key, "")
+    })
 #for sentence in preprocessed_text:
  #   result1 = cp.parse(sentence)
   #  result.append(result1)
