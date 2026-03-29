@@ -33,7 +33,7 @@ def runSystem():
         # Get info from database
         people = []
         for i in range(0,newNum):
-            people.append(get_person_by_id(embeddings[i]))
+            people.append(get_person_by_id(conn, embeddings[i]))
         
         # Print into Colsole logs
         for person in people:
