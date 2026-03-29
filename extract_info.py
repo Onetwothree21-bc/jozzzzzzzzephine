@@ -1,5 +1,4 @@
 import string
-
 import nltk
 import re
 import numpy
@@ -31,15 +30,12 @@ def preprocess(text):
         return sentences
 
 
-
 def main():
     text = open('examples.txt', 'r').read()
     #tokenizer = RegexpTokenizer(r'\w+')
     text = re.sub(r'[^\x00-\x7F]+', '', text)
     #text = re.sub(r'[^\w\s]', '', text)
     grammar = r"""
-    #COURSE: {<STUDY>.*<NNP>+}
-    #COURSE: {<STUDY>.*<NN>+}
     COURSE: {<STUDY>.*<COURSE>+}
     NAME: {<NAME><NNP>}
     NAME: {<NAME><.*><NNP>}
@@ -49,12 +45,7 @@ def main():
         "architecture", "biomed", "biology", "bio", "business", "management", "chem", "chemistry", "civil", "computer science", "computer", "science", "cs", "electrical", "ee", "engineering", "eng", "english", "history", "maths", "mathematics", "medicine", "physics", "psychology", "social", "sociology", "statistics", "MSDS", "economics", "econometrics", "finance", "accounting", "marketing", "econ", "mech", "languages", "physics", "politics", "sports", "sport"
     ]
 
-
     preprocessed_text = preprocess(text)
-    #preprocessed_text = [
-    #    (word, "STUDY") if (word.lower() == "study") | (word.lower == "studies") | (word.lower == "studying") | (word.lower == "course") else (word, tag)
-    #    for (word, tag, id) in preprocessed_text[0]
-    #]
     text1 = []
     for (word, tag, id) in preprocessed_text:
         if ((word == "study") | (word == "studies") | (word == "studying") | (word == "course") | (word == "doing") | (word == "do")):
@@ -67,14 +58,13 @@ def main():
             text1.append((word, tag, id))
 
     cp = nltk.RegexpParser(grammar)
-
     parsed_text = cp.parse(text1)
 
     names = {}
     for subtree in parsed_text.subtrees():
         if subtree.label() == 'NAME':
-            names[subtree.leaves()[-1][2]] = subtree.leaves()[-1][0]  # Store the ID as the value
-    names = {key: names[key] for key in sorted(names)}  # Remove any names that are also course names
+            names[subtree.leaves()[-1][2]] = subtree.leaves()[-1][0]  # Store the ID as the key and the name as the value
+    names = {key: names[key] for key in sorted(names)}  # Sort by key (id)
 
     courses = {}
     for subtree in parsed_text.subtrees():
@@ -82,8 +72,7 @@ def main():
             course = ""
             for i in range(1, len(subtree.leaves())):
                 course += subtree.leaves()[i][0] + " "
-            courses[subtree.leaves()[1][2]] = course.strip()  # Store the ID as the value
-
+            courses[subtree.leaves()[1][2]] = course.strip()  # Store the ID as the key and the course as the value
 
     output = []
     for key in names.keys():
