@@ -49,8 +49,7 @@ def imageCheck():
     current_face_encodings = []
     process_this_frame = True
     
-    initialRet, initialFrame = video_capture.read()
-    checkPeople = initilize(initialFrame, known_faces)
+    checkPeople = initilize(video_capture, known_faces)
     peoples = [x for (x,y,z) in checkPeople]
     new_face_encodings = [z for (x,y,z) in checkPeople]
 
@@ -58,8 +57,11 @@ def imageCheck():
         # TODO:
         # Start microphone recording 
         startTime = datetime.datetime.now()
-        idnum = len(checkPeople)
+        idnum = len([x for (x,y,z) in checkPeople if x == "Unknown"])
         talkingCounter = 0
+        currentTalker = 0
+        timestamps = []
+        timestamps.append((0,0))
         while talkingCounter < 2400:
             # Grab a single frame of video
             ret, frame = video_capture.read()
@@ -69,8 +71,8 @@ def imageCheck():
                 rgb_small_frame = convertImage(frame)
                 
                 newImageProcess = checkImage(rgb_small_frame,known_faces)
-                if len([unknown for unknown in newImageProcess[0]if unknown == None]) != idnum:
-                    continue
+                if len([x for x in newImageProcess if x[0] == "Unknown"]) != idnum:
+                    pass
                     #TODO:
                     #implement this
                 
@@ -84,27 +86,26 @@ def imageCheck():
                 #    pil_image = Image.fromarray(face_image)
                 #    pil_image.show()
 
-                currentTalker = None
-                timestamps = []
                 
                 personTalking = detectTalker(frame)
                 
                 if personTalking != currentTalker:
-                    if personTalking == None:
+                    if personTalking == 0 and timestamps:
                         if talkingCounter > 10:
                             timestamps[-1] = (timestamps[-1][0],0)
                         else:
                             timestamps[-1] = (timestamps[-1][0],currentTalker)
-                    timestamps[-1] = (timestamps[-1][0],personTalking)
+                    
                     currentTalker  = personTalking
-                    timestamps.append(startTime - datetime.datetime.now(),currentTalker)
+                    timestamps.append((int((datetime.datetime.now() - startTime).total_seconds() * 1000), currentTalker))
                 
-                if personTalking == None:
+                if personTalking == 0:
                     talkingCounter += 1
                 else:
                     talkingCounter = 0
             
             process_this_frame = not process_this_frame
+        timestamps[-1] = (timestamps[-1][0],-1)
                     
 
         #TODO:
@@ -131,7 +132,7 @@ def imageCheck():
         return (audio, timestamps),len(new_face_encodings)
 
             # Display the results
-        displayResultsOnWebCam()
+        displayResultsOnWebCam(face_locations, face_names,frame)
 
         # Hit 'q' on the keyboard to quit!
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -177,11 +178,11 @@ def checkImage(frame,known_faces, new = 'n'):
         # See if the face is a match for the known face(s)
         matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
         name = "Unknown"
-
-        face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
-        best_match_index = np.argmin(face_distances)
-        if matches[best_match_index] and face_distances[best_match_index] < 0.4:
-            name = known_face_names[best_match_index]
+        if len(known_face_encodings) != 0:
+            face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
+            best_match_index = np.argmin(face_distances)
+            if matches[best_match_index] and face_distances[best_match_index] < 0.4:
+                name = known_face_names[best_match_index]
    
         potential_face_names.append((name,tempid,face_encoding))
     return potential_face_names
@@ -198,24 +199,35 @@ def avg_y(points):
     return sum(p[1] for p in points) / len(points)
 
 def detectTalker(frame):
-    mouths = []
     allFaceLandmarks = face_recognition.face_landmarks(frame)
+
+    # No faces detected
+    if not allFaceLandmarks:
+        return 0
+
+    mouths = []
     for faceLandmarks in allFaceLandmarks:
-        if not faceLandmarks["top_lip"] or not faceLandmarks["bottom_lip"]:
+        top_lip = faceLandmarks.get("top_lip")
+        bottom_lip = faceLandmarks.get("bottom_lip")
+        
+        # If lips are missing, mouth openness is 0
+        if not top_lip or not bottom_lip:
             mouths.append(0)
         else:
-            top_lip = faceLandmarks["top_lip"]
-            bottom_lip = faceLandmarks["bottom_lip"]
-
-            # Inner lip points (these are more accurate for openness)
+            # Inner lip points (more accurate for openness)
             top_inner = top_lip[6:12]
             bottom_inner = bottom_lip[0:6]
             mouth_open = abs(avg_y(bottom_inner) - avg_y(top_inner))
             mouths.append(mouth_open)
 
-    max_value = max(mouths)
-    talkerID = None
+    # If no mouths calculated, return 0
+    if not mouths:
+        return 0
 
+    max_value = max(mouths)
+
+    # Check if max mouth is noticeably more open than others
     if all(max_value - m > 1 for m in mouths if m != max_value):
-        talkerID = mouths.index(max_value)+1
-    return talkerID
+        return mouths.index(max_value) + 1
+
+    return 0  # no clear talker
