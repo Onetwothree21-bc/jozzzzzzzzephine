@@ -1,18 +1,22 @@
-# jozzzzzzzzephine
-Facial recognition software to repeat to you important details about people you have previously met.
-# Multi-Modal Data Processing System
+# Glasses-Based, Identity Assistant
 
 ## Overview
-Developed at University of Bath Hackathon 2026, this project uses facial recognition software and voice analysis to store and remember key details about those you interact with and repeats tehm to you when you next run into them. Importantly, it does this whilst not storing any sensitive information about the people you interact with, e.g. voice recordings or face pictures.
+Developed at the University of Bath Hackathon 2026, this project uses facial recognition and speech processing to help users recall key details about people they have previously met. The system processes audio and visual inputs in real time and provides contextual reminders during interactions, while avoiding storage of sensitive raw data such as images or voice recordings. It is designed as an embedded system which can sit on glasses, clothes or other accessories.
 
 ## Features
-- Speech-to-text processing
-- Video analysis and object detection
-- Text extraction and preprocessing
+- Real-time facial recognition and video analysis  
+- Speech-to-text processing for capturing contextual information  
+- Text extraction and preprocessing for storing key details  
+- Privacy-focused design (no storage of raw images or audio)  
 
 ## Technologies
-Python, NLP, computer vision, machine learning
+Python, machine learning, natural language processing (NLP), computer vision  
+
+## My Contribution
+- Developed components for speech-to-text and data processing  
+- Implemented text extraction and preprocessing pipeline  
+- Contributed to system integration and real-time data handling  
 
 ## Results
-- Successfully processed live video and microphone data
-- Demonstrated real-time analysis capabilities
+- Successfully processed live video and microphone input  
+- Demonstrated real-time identification and contextual recall functionality  
